@@ -50,7 +50,7 @@ def msrcr_enhancement(image_path):
     plt.axis('off')
 
     plt.subplot(1, 2, 2)
-    plt.title('Algoritm natijasi')
+    plt.title('Algoritmm natijasi')
     plt.imshow(result)
     plt.axis('off')
 
