@@ -46,10 +46,14 @@ def msrcr_enhancement(image_path):
     plt.figure(figsize=(12, 6))
     plt.subplot(1, 2, 1)
 <<<<<<< HEAD
+<<<<<<< HEAD
     plt.title('Asll tasvir')
 =======
     plt.title('Asl ttasvir')
 >>>>>>> main
+=======
+    plt.title('Togri tasvir')
+>>>>>>> branch1
     plt.imshow(img)
     plt.axis('off')
 
