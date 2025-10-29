@@ -45,7 +45,7 @@ def msrcr_enhancement(image_path):
 
     plt.figure(figsize=(12, 6))
     plt.subplot(1, 2, 1)
-    plt.title('Asl tasvir')
+    plt.title('Asl ttasvir')
     plt.imshow(img)
     plt.axis('off')
 
