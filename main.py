@@ -1,69 +1,26 @@
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
 
-def single_scale_retinex(img, sigma):
-    img = img.astype(np.float32) + 1.0
-    retinex = np.log10(img) - np.log10(cv2.GaussianBlur(img, (0, 0), sigma))
-    return retinex
-
-def multi_scale_retinex(img, sigmas):
-    retinex = np.zeros_like(img, dtype=np.float32)
-    for sigma in sigmas:
-        retinex += single_scale_retinex(img, sigma)
-    retinex /= len(sigmas)
-    return retinex
-
-def color_restoration(img, alpha, beta):
-    img_sum = np.sum(img, axis=2, keepdims=True)
-    img_sum[img_sum == 0] = 1  # bo‘linishni oldini olish
-    color_restoration = beta * (np.log10(alpha * img) - np.log10(img_sum))
-    return color_restoration
-
-def msrcr(img, sigmas, G=5, b=25, alpha=125, beta=46, low_clip=0.01, high_clip=0.99):
-    img = img.astype(np.float32) + 1.0
-    retinex = multi_scale_retinex(img, sigmas)
-    color_rest = color_restoration(img, alpha, beta)
-    msrcr_result = G * (retinex * color_rest + b)
-
-    # Ranglarni normallashtirish (0-255 oralig‘iga)
-    for i in range(msrcr_result.shape[2]):
-        channel = msrcr_result[:, :, i]
-        low_val = np.percentile(channel, low_clip * 100)
-        high_val = np.percentile(channel, high_clip * 100)
-        channel = np.clip(channel, low_val, high_val)
-        msrcr_result[:, :, i] = (channel - low_val) / (high_val - low_val) * 255
-
-    return np.uint8(msrcr_result)
-
-def msrcr_enhancement(image_path):
+def segment_image_kmeans(image_path, K=10):
     img = cv2.imread(image_path)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = cv2.resize(img, (400, 400))
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-    sigmas = [15, 80, 250]
-    result = msrcr(img, sigmas)
+    pixel_values = img_rgb.reshape((-1, 3)).astype(np.float32)
 
-    plt.figure(figsize=(12, 6))
-    plt.subplot(1, 2, 1)
-<<<<<<< HEAD
-<<<<<<< HEAD
-    plt.title('Asll tasvir')
-=======
-    plt.title('Asl ttasvir')
->>>>>>> main
-=======
-    plt.title('Togri tasvir')
->>>>>>> branch1
-    plt.imshow(img)
-    plt.axis('off')
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2)
+    _, labels, centers = cv2.kmeans(pixel_values, K, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
 
-    plt.subplot(1, 2, 2)
-    plt.title('Algoritmm natijasi')
-    plt.imshow(result)
-    plt.axis('off')
+    centers = np.uint8(centers)
 
-    plt.show()
+    segmented_data = centers[labels.flatten()]
+    segmented_image = segmented_data.reshape(img_rgb.shape)
 
-# Dastur ishga tushiriladi
-image_path = 'img_1.png'  # O‘zingizdagi rasm nomini yozing
-msrcr_enhancement(image_path)
+    cv2.imshow('Asl rasm', img)
+    cv2.imshow(f'{K} segmentli rasm', cv2.cvtColor(segmented_image, cv2.COLOR_RGB2BGR))
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    cv2.imwrite('segmentlangan_rasm.jpg', cv2.cvtColor(segmented_image, cv2.COLOR_RGB2BGR))
+
+segment_image_kmeans(image_path='img1.jpg', K=4)
